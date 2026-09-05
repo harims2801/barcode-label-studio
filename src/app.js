@@ -118,7 +118,7 @@
     within(settings.startPosition, 1, settings.rowsPerPage * 4, "Starting label position");
     within(settings.barcodeWidthCm, 1.5, 4.2, "Barcode width");
     within(settings.barcodeHeightCm, .4, 2, "Barcode height");
-    within(settings.nameFont, 6, 16, "Product font");
+    within(settings.nameFont, 6, 20, "Product font");
     within(settings.lineSpacing, .8, 1.5, "Line spacing");
     if (settings.barcodeWidthCm > settings.labelWidthCm - .04) throw new Error("Barcode width is too large for the label width.");
     if (settings.rowsPerPage * settings.labelHeightCm + (settings.rowsPerPage - 1) * settings.verticalGapCm > 25.22) throw new Error("The selected rows are too tall for an A4 page.");
@@ -189,8 +189,9 @@
       let barcode = "";
       try { barcode = barcodeCanvas(product.code, 2, 50).toDataURL("image/png"); } catch { /* incomplete edit */ }
       const color = `#${settings.accentColor}`;
+      const previewNameSize = (settings.nameFont * 0.168).toFixed(3);
       slots.push(`<div class="label-preview">
-        <div class="p-name">${escapeXml(product.name)}</div>
+        <div class="p-name" style="font-size:${previewNameSize}cqw">${escapeXml(product.name)}</div>
         ${barcode ? `<img class="p-barcode" alt="" src="${barcode}" />` : ""}
         <div class="p-code">${escapeXml(product.code)}</div>
         ${product.size ? `<div class="p-size" style="color:${color}">Size: ${escapeXml(product.size)}</div>` : ""}
@@ -301,7 +302,7 @@
     const borders = '<w:tcBorders><w:top w:val="single" w:sz="6" w:space="0" w:color="000000"/><w:left w:val="single" w:sz="6" w:space="0" w:color="000000"/><w:bottom w:val="single" w:sz="6" w:space="0" w:color="000000"/><w:right w:val="single" w:sz="6" w:space="0" w:color="000000"/></w:tcBorders>';
     const properties = `<w:tcPr><w:tcW w:w="${layout.labelWidthDxa}" w:type="dxa"/>${borders}<w:vAlign w:val="center"/></w:tcPr>`;
     if (!product) return `<w:tc>${properties}<w:p/></w:tc>`;
-    const nameSize = product.name.length > 27 ? Math.min(layout.nameFont, 6.5) : product.name.length > 20 ? Math.min(layout.nameFont, 7.5) : layout.nameFont;
+    const nameSize = layout.nameFont;
     const nameLine = Math.max(nameSize + 1, nameSize * 1.08);
     const content = [
       textParagraph(product.name, nameSize, nameLine, true),
@@ -411,7 +412,7 @@
           slots.push('<div class="print-label empty"></div>');
           continue;
         }
-        const nameSize = product.name.length > 27 ? Math.min(settings.nameFont, 6.5) : product.name.length > 20 ? Math.min(settings.nameFont, 7.5) : settings.nameFont;
+        const nameSize = settings.nameFont;
         const barcode = barcodeCanvas(product.code, 5, 100).toDataURL("image/png");
         slots.push(`<div class="print-label" style="line-height:${settings.lineSpacing}">
           <div class="print-name" style="font-size:${nameSize}pt">${escapeXml(product.name)}</div>

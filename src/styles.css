@@ -98,10 +98,10 @@ td:nth-child(1) { width: 16%; } td:nth-child(2) { width: 32%; } td:nth-child(3) 
 .preview-head h2 { font-size: 1.12rem; }
 .preview-head > span { color: var(--muted); font-size: .8rem; }
 .paper-stage { display: grid; place-items: center; padding: clamp(14px, 3vw, 28px); background: #dce2ea; border: 1px solid #cbd3de; border-radius: 16px; box-shadow: inset 0 1px 2px #8390a222; }
-.paper { width: min(100%, 520px); aspect-ratio: 210 / 297; background: #fff; box-shadow: 0 12px 30px #253b5b22; padding: 7.4% 7.7%; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(6, 1fr); gap: .62%; overflow: hidden; }
+.paper { width: min(100%, 520px); aspect-ratio: 210 / 297; container-type: inline-size; background: #fff; box-shadow: 0 12px 30px #253b5b22; padding: 7.4% 7.7%; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(6, 1fr); gap: .62%; overflow: hidden; }
 .label-preview { min-width: 0; min-height: 0; border: 1px solid #2f3540; display: flex; flex-direction: column; justify-content: center; align-items: center; overflow: hidden; padding: 2px 1px; line-height: 1.15; color: #070707; background: #fff; font-family: Arial, sans-serif; }
 .label-preview.empty { border-color: #d3d6db; background: #fafafa; }
-.p-name { width: 98%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center; font-weight: 700; font-size: clamp(4px, .7vw, 8px); margin-bottom: 2px; }
+.p-name { width: 98%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center; font-weight: 700; font-size: 1.764cqw; margin-bottom: 2px; }
 .p-barcode { width: 95%; height: 27%; object-fit: fill; display: block; }
 .p-code, .p-size, .p-price, .p-brand { max-width: 98%; white-space: nowrap; font-size: clamp(3.5px, .59vw, 6.7px); text-align: center; }
 .p-price { font-weight: 600; font-size: clamp(4px, .65vw, 7.3px); }
@@ -118,7 +118,6 @@ td:nth-child(1) { width: 16%; } td:nth-child(2) { width: 32%; } td:nth-child(3) 
   .editor-panel { border-right: 0; }
   .preview-panel { position: static; border-top: 1px solid var(--line); }
   .paper { max-width: 580px; }
-  .p-name { font-size: clamp(5px, 1.3vw, 9px); }
   .p-code, .p-size, .p-price, .p-brand { font-size: clamp(4px, 1vw, 7px); }
 }
 @media (max-width: 640px) {
