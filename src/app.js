@@ -29,7 +29,7 @@
   const $ = selector => document.querySelector(selector);
   const rowsElement = $("#product-rows");
   const toast = $("#toast");
-  const settingsIds = ["price-prefix", "brand", "accent-color", "start-position", "barcode-width", "barcode-height", "name-font", "line-spacing", "rows-per-page", "output-prefix"];
+  const settingsIds = ["price-prefix", "brand", "price-color", "size-color", "start-position", "barcode-width", "barcode-height", "name-font", "line-spacing", "rows-per-page", "output-prefix"];
 
   const escapeXml = value => String(value ?? "")
     .replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
@@ -93,7 +93,8 @@
     const settings = {
       pricePrefix: $("#price-prefix").value.trim() || "Yes WE Price",
       brand: $("#brand").value.trim() || "Yeswedesigns",
-      accentColor: $("#accent-color").value,
+      priceColor: $("#price-color").value,
+      sizeColor: $("#size-color").value,
       startPosition,
       rowsPerPage,
       barcodeWidthCm: Number($("#barcode-width").value),
@@ -168,7 +169,7 @@
 
   function updatePreview() {
     let settings;
-    try { settings = readSettings(); } catch { settings = { rowsPerPage: 6, startPosition: 1, accentColor: "C00000", pricePrefix: "Yes WE Price", brand: "Yeswedesigns" }; }
+    try { settings = readSettings(); } catch { settings = { rowsPerPage: 6, startPosition: 1, priceColor: "C00000", sizeColor: "C00000", pricePrefix: "Yes WE Price", brand: "Yeswedesigns" }; }
     const labels = expandedProducts(false);
     const labelsPerPage = settings.rowsPerPage * 4;
     const totalSlots = Math.max(1, settings.startPosition - 1 + labels.length);
@@ -188,14 +189,15 @@
       }
       let barcode = "";
       try { barcode = barcodeCanvas(product.code, 2, 50).toDataURL("image/png"); } catch { /* incomplete edit */ }
-      const color = `#${settings.accentColor}`;
+      const priceColor = `#${settings.priceColor}`;
+      const sizeColor = `#${settings.sizeColor}`;
       const previewNameSize = (settings.nameFont * 0.168).toFixed(3);
       slots.push(`<div class="label-preview">
         <div class="p-name" style="font-size:${previewNameSize}cqw">${escapeXml(product.name)}</div>
         ${barcode ? `<img class="p-barcode" alt="" src="${barcode}" />` : ""}
         <div class="p-code">${escapeXml(product.code)}</div>
-        ${product.size ? `<div class="p-size" style="color:${color}">Size: ${escapeXml(product.size)}</div>` : ""}
-        <div class="p-price" style="color:${color}">${escapeXml(settings.pricePrefix)} ${escapeXml(product.price)}/-</div>
+        ${product.size ? `<div class="p-size" style="color:${sizeColor}">Size: ${escapeXml(product.size)}</div>` : ""}
+        <div class="p-price" style="color:${priceColor}">${escapeXml(settings.pricePrefix)} ${escapeXml(product.price)}/-</div>
         <div class="p-brand">${escapeXml(settings.brand)}</div>
       </div>`);
     }
@@ -278,7 +280,9 @@
     const color = String(values["price and size color"] || "").toLowerCase().replace("#", "");
     const colors = { red: "C00000", black: "000000", blue: "0070C0", green: "008000", purple: "7030A0", orange: "E36C09" };
     const normalized = colors[color] || color.toUpperCase();
-    if ([...$("#accent-color").options].some(option => option.value === normalized)) $("#accent-color").value = normalized;
+    for (const id of ["price-color", "size-color"]) {
+      if ([...$(`#${id}`).options].some(option => option.value === normalized)) $(`#${id}`).value = normalized;
+    }
   }
 
   function runProperties(fontSize, bold = false, color = "000000") {
@@ -309,8 +313,8 @@
       imageParagraph(relationId, imageId, layout.barcodeWidthEmu, layout.barcodeHeightEmu),
       textParagraph(product.code, layout.codeFont, layout.codeFont * layout.lineSpacing)
     ];
-    if (product.size) content.push(textParagraph(`Size: ${product.size}`, layout.sizeFont, layout.sizeFont * layout.lineSpacing, false, layout.accentColor));
-    content.push(textParagraph(`${layout.pricePrefix} ${product.price}/-`, layout.priceFont, layout.priceFont * layout.lineSpacing, false, layout.accentColor));
+    if (product.size) content.push(textParagraph(`Size: ${product.size}`, layout.sizeFont, layout.sizeFont * layout.lineSpacing, false, layout.sizeColor));
+    content.push(textParagraph(`${layout.pricePrefix} ${product.price}/-`, layout.priceFont, layout.priceFont * layout.lineSpacing, false, layout.priceColor));
     content.push(textParagraph(layout.brand, layout.brandFont, layout.brandFont * layout.lineSpacing));
     return `<w:tc>${properties}${content.join("")}</w:tc>`;
   }
@@ -418,8 +422,8 @@
           <div class="print-name" style="font-size:${nameSize}pt">${escapeXml(product.name)}</div>
           <img alt="" src="${barcode}" style="width:${settings.barcodeWidthCm}cm;height:${settings.barcodeHeightCm}cm" />
           <div class="print-line" style="font-size:${settings.codeFont}pt">${escapeXml(product.code)}</div>
-          ${product.size ? `<div class="print-line" style="font-size:${settings.sizeFont}pt;color:#${settings.accentColor}">Size: ${escapeXml(product.size)}</div>` : ""}
-          <div class="print-line" style="font-size:${settings.priceFont}pt;color:#${settings.accentColor}">${escapeXml(settings.pricePrefix)} ${escapeXml(product.price)}/-</div>
+          ${product.size ? `<div class="print-line" style="font-size:${settings.sizeFont}pt;color:#${settings.sizeColor}">Size: ${escapeXml(product.size)}</div>` : ""}
+          <div class="print-line" style="font-size:${settings.priceFont}pt;color:#${settings.priceColor}">${escapeXml(settings.pricePrefix)} ${escapeXml(product.price)}/-</div>
           <div class="print-line" style="font-size:${settings.brandFont}pt">${escapeXml(settings.brand)}</div>
         </div>`);
       }
@@ -439,7 +443,13 @@
     try {
       const saved = JSON.parse(localStorage.getItem("barcode-label-studio") || "null");
       if (Array.isArray(saved?.products) && saved.products.length) products = saved.products;
-      Object.entries(saved?.settings || {}).forEach(([id, value]) => {
+      const savedSettings = saved?.settings || {};
+      const legacyColor = savedSettings["accent-color"];
+      if (legacyColor) {
+        if (!savedSettings["price-color"]) savedSettings["price-color"] = legacyColor;
+        if (!savedSettings["size-color"]) savedSettings["size-color"] = legacyColor;
+      }
+      Object.entries(savedSettings).forEach(([id, value]) => {
         if (settingsIds.includes(id) && $(`#${id}`)) $(`#${id}`).value = value;
       });
     } catch { /* Start with sample rows if saved data is invalid. */ }
