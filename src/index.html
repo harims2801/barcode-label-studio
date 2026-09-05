@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Create printable Code 128 barcode labels from Excel and download a ready-to-print Word document." />
+  <title>Barcode Label Studio</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M4 4v16M8 4v16M12 4v16M15 4v16M20 4v16"/></svg>
+    </div>
+    <div>
+      <h1>Barcode Label Studio</h1>
+      <p>Enter products, preview labels, then download or print</p>
+    </div>
+    <div class="privacy-pill">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.7 2.9 8.2 7 10 4.1-1.8 7-5.3 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/></svg>
+      Files stay on this device
+    </div>
+  </header>
+
+  <main class="workspace">
+    <section class="editor-panel" aria-labelledby="products-heading">
+      <div class="step-row">
+        <div class="step active"><span>1</span><strong>Products</strong></div>
+        <div class="step-line"></div>
+        <div class="step"><span>2</span><strong>Preview</strong></div>
+        <div class="step-line"></div>
+        <div class="step"><span>3</span><strong>Download</strong></div>
+      </div>
+
+      <div class="section-head">
+        <div>
+          <h2 id="products-heading">Product details</h2>
+          <p>Enter one product per row. Size can be left empty.</p>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Product name</th>
+              <th>Qty</th>
+              <th>Size <em>optional</em></th>
+              <th>Price</th>
+              <th><span class="sr-only">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody id="product-rows"></tbody>
+        </table>
+      </div>
+
+      <button id="add-row" class="button ghost" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        Add product
+      </button>
+
+      <details class="settings-card" id="settings-card">
+        <summary>
+          <span class="summary-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10M14 4v6M6 14v6"/></svg>
+          </span>
+          <span><strong>Label settings</strong><small>Brand, price text, colour, size and spacing</small></span>
+          <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 10 4 4 4-4"/></svg>
+        </summary>
+        <div class="settings-grid">
+          <label>Price prefix<input id="price-prefix" value="Yes WE Price" /></label>
+          <label>Brand<input id="brand" value="Yeswedesigns" /></label>
+          <label>Price &amp; size colour
+            <select id="accent-color">
+              <option value="C00000">Red</option><option value="000000">Black</option>
+              <option value="0070C0">Blue</option><option value="008000">Green</option>
+              <option value="7030A0">Purple</option><option value="E36C09">Orange</option>
+            </select>
+          </label>
+          <label>Starting label position<input id="start-position" type="number" min="1" max="24" value="1" /></label>
+          <label>Barcode width (cm)<input id="barcode-width" type="number" min="1.5" max="4.2" step="0.05" value="3.75" /></label>
+          <label>Barcode height (cm)<input id="barcode-height" type="number" min="0.4" max="2" step="0.05" value="1.25" /></label>
+          <label>Product font (pt)<input id="name-font" type="number" min="6" max="16" step="0.5" value="10.5" /></label>
+          <label>Line spacing<input id="line-spacing" type="number" min="0.8" max="1.5" step="0.05" value="1.15" /></label>
+          <label>Rows per page<input id="rows-per-page" type="number" min="1" max="6" value="6" /></label>
+          <label>Output file name<input id="output-prefix" value="Barcode_Labels" /></label>
+        </div>
+      </details>
+
+      <div class="bottom-action">
+        <div><strong id="label-count">0 labels</strong><span id="page-count">0 pages</span></div>
+        <div class="action-buttons">
+          <button id="print-labels" class="button secondary" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 8V3h10v5M7 17H5a2 2 0 0 1-2-2v-5h18v5a2 2 0 0 1-2 2h-2M7 14h10v7H7z"/></svg>
+            Print labels
+          </button>
+          <button id="generate" class="button primary" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0-4-4m4 4 4-4M5 19h14"/></svg>
+            Download Word
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <aside class="preview-panel" aria-labelledby="preview-heading">
+      <div class="preview-head">
+        <div><span class="eyebrow">Live preview</span><h2 id="preview-heading">A4 label sheet</h2></div>
+        <span id="preview-page">Page 1 of 1</span>
+      </div>
+      <div class="paper-stage">
+        <div class="paper" id="preview-paper"></div>
+      </div>
+      <p class="print-tip">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z"/><path d="M12 11v6M12 7h.01"/></svg>
+        Print from Word using <strong>Actual Size / 100%</strong>.
+      </p>
+    </aside>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <div id="print-sheets" aria-hidden="true"></div>
+  <script src="jszip.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
