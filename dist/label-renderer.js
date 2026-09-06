@@ -51,14 +51,14 @@ window.LabelRenderer = (() => {
     ctx.strokeStyle = '#19B6D5'; ctx.lineWidth = .35;
     ctx.beginPath(); ctx.moveTo(4, ruleY); ctx.lineTo(46, ruleY); ctx.stroke();
     text('Trust. Quality. Style.', s.taglineFont, taglineY, true, '19B6D5');
-    ctx.strokeStyle = '#000'; ctx.lineWidth = .2;
-    ctx.strokeRect(2, 30, 46, 43);
     const nameLines = wrap(product.name, s.nameFont, 42);
     const nameLineHeight = s.nameFont * MM_PER_PT * 1.15;
     if (nameLines.length * nameLineHeight > 10.2) throw new Error('Product font is too tall for this name. Reduce Product font.');
     nameLines.forEach((line, i) => text(line, s.nameFont, 32 + i * nameLineHeight, true, '000000', 42));
-    // Barcode stays at a fixed position even when optional size or logo changes.
-    const barcodeY = 43, barcodeH = s.barcodeHeightCm * 10, barcodeW = s.barcodeWidthCm * 10;
+    // Content flows without reserving blank lines. The barcode dimensions stay fixed;
+    // only its vertical position follows the actual number of product-name lines.
+    const barcodeY = 32 + nameLines.length * nameLineHeight + 1.4;
+    const barcodeH = s.barcodeHeightCm * 10, barcodeW = s.barcodeWidthCm * 10;
     ctx.fillStyle = '#fff'; ctx.fillRect((50 - barcodeW) / 2 - .5, barcodeY - .4, barcodeW + 1, barcodeH + .8);
     ctx.imageSmoothingEnabled = false;
     ctx.drawImage(barcodeCanvas(product.code, 8, 160), (50 - barcodeW) / 2, barcodeY, barcodeW, barcodeH);
@@ -72,6 +72,11 @@ window.LabelRenderer = (() => {
     if (product.size) detail(`Size: ${product.size}`, s.sizeFont, false, s.sizeColor);
     detail(`${s.pricePrefix} ${product.price}/-`, s.priceFont, true, s.priceColor);
     detail(s.brand, s.brandFont, false, '000000');
+    const panelBottom = y + .25;
+    if (panelBottom > 73) throw new Error('Label details are too tall. Reduce a font, barcode height or line spacing.');
+    ctx.strokeStyle = '#000'; ctx.lineWidth = .2;
+    ctx.strokeRect(2, 30, 46, panelBottom - 30);
+    canvas.labelLayout = { barcodeY, barcodeH, barcodeW, nameLines: nameLines.length, panelBottom };
     return canvas;
   }
   return { ready, render };

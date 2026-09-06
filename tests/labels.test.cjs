@@ -44,6 +44,18 @@ test('label has one outer border and one barcode-section border',async()=>{
   assert.ok(isDark(2,35),'barcode-section border');
   assert.equal(isDark(2.8,35),false,'no duplicate inner border');
 });
+test('content closes gaps while barcode size and outer label stay fixed',async()=>{
+  await init;
+  const compact=renderer.render({...p,name:'silk',size:''},defaults,api.barcodeCanvas);
+  const nameWrap=renderer.render({...p,name:'FANCY COTTON SAREE',size:''},defaults,api.barcodeCanvas);
+  const withSize=renderer.render({...p,name:'silk',size:'XL'},defaults,api.barcodeCanvas);
+  assert.equal(compact.width,nameWrap.width);assert.equal(compact.height,nameWrap.height);
+  assert.equal(compact.labelLayout.barcodeH,nameWrap.labelLayout.barcodeH);
+  assert.equal(compact.labelLayout.barcodeW,nameWrap.labelLayout.barcodeW);
+  assert.equal(nameWrap.labelLayout.nameLines,2);
+  assert.ok(nameWrap.labelLayout.barcodeY>compact.labelLayout.barcodeY);
+  assert.ok(withSize.labelLayout.panelBottom>compact.labelLayout.panelBottom);
+});
 test('logo position changes only watermark, barcode pixels unchanged',async()=>{
   await init;
   const a=renderer.render(p,defaults,api.barcodeCanvas),b=renderer.render(p,{...defaults,logoOffset:20},api.barcodeCanvas);
