@@ -3,6 +3,7 @@
 Portrait shop labels with blue/cyan branding and a movable logo watermark.
 
 - 50 × 75 mm labels; 3 columns × 3 rows on A4 with 1.8 mm gaps.
+- One border surrounds the complete label and one border surrounds the barcode section.
 - Enter code, product name, quantity, optional size and price directly.
 - Separate font controls for Yes We, Authentic Designs and Trust. Quality. Style.
 - Logo vertical position is in millimetres: negative moves up, positive moves down. Its 17 × 30 mm size stays fixed. Default position keeps the complete logo above the barcode.

@@ -16,9 +16,9 @@ Completed 2026-09-06.
 
 ## Automated and document checks
 
-Six regression tests pass: default/optional-size rendering; watermark-only pixel differences with identical barcode pixels; independent font/colour changes; overflow rejection; Code128 leading-zero/quiet-zone checks; and two-page DOCX generation with distinct details sharing one barcode code.
+Seven regression tests pass: default/optional-size rendering; outer and barcode-section borders; watermark-only pixel differences with identical barcode pixels; independent font/colour changes; overflow rejection; Code128 leading-zero/quiet-zone checks; and two-page DOCX generation with distinct details sharing one barcode code.
 
-The generated two-page DOCX was rendered through LibreOffice and both pages visually inspected. Label borders, branding, full watermark, optional Size and changing prices fit without clipping. JavaScript syntax and whitespace checks pass. Standalone packaging embeds the logo, scripts and Word template.
+The generated two-page DOCX was rendered through LibreOffice and both pages visually inspected. The single outer border and single barcode-section border, branding, full watermark, optional Size and changing prices fit without clipping. JavaScript syntax and whitespace checks pass. Standalone packaging embeds the logo, scripts and Word template.
 
 ## Limits
 

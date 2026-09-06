@@ -322,6 +322,10 @@ window.LabelRenderer = (() => {
     const ctx = canvas.getContext('2d');
     ctx.scale(scale, scale);
     ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, 50, 75);
+    // Two distinct boxes: the outer label edge and the barcode/details section.
+    // Keep the outer stroke slightly inset so it survives image and printer clipping.
+    ctx.strokeStyle = '#000'; ctx.lineWidth = .2;
+    ctx.strokeRect(.35, .35, 49.3, 74.3);
     const font = (pt, bold) => { ctx.font = `${bold ? 'bold' : 'normal'} ${pt * MM_PER_PT}px Arial`; };
     const text = (value, pt, y, bold = false, color = '000000', width = 44, condensed = 1) => {
       font(pt, bold);
@@ -357,7 +361,7 @@ window.LabelRenderer = (() => {
     ctx.beginPath(); ctx.moveTo(4, ruleY); ctx.lineTo(46, ruleY); ctx.stroke();
     text('Trust. Quality. Style.', s.taglineFont, taglineY, true, '19B6D5');
     ctx.strokeStyle = '#000'; ctx.lineWidth = .2;
-    ctx.strokeRect(2, 30, 46, 43); ctx.strokeRect(2.8, 30.8, 44.4, 41.4);
+    ctx.strokeRect(2, 30, 46, 43);
     const nameLines = wrap(product.name, s.nameFont, 42);
     const nameLineHeight = s.nameFont * MM_PER_PT * 1.15;
     if (nameLines.length * nameLineHeight > 10.2) throw new Error('Product font is too tall for this name. Reduce Product font.');

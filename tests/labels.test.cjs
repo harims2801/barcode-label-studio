@@ -36,6 +36,14 @@ test('branding, optional size and long names render at 600 dpi',async()=>{
     assert.equal(canvas.width,1181);assert.equal(canvas.height,1772);
   }
 });
+test('label has one outer border and one barcode-section border',async()=>{
+  await init;
+  const canvas=renderer.render(p,defaults,api.barcodeCanvas),ctx=canvas.getContext('2d'),px=600/25.4;
+  const isDark=(x,y)=>{const d=ctx.getImageData(Math.round(x*px),Math.round(y*px),1,1).data;return d[0]<80&&d[1]<80&&d[2]<80;};
+  assert.ok(isDark(.35,15),'outer border');
+  assert.ok(isDark(2,35),'barcode-section border');
+  assert.equal(isDark(2.8,35),false,'no duplicate inner border');
+});
 test('logo position changes only watermark, barcode pixels unchanged',async()=>{
   await init;
   const a=renderer.render(p,defaults,api.barcodeCanvas),b=renderer.render(p,{...defaults,logoOffset:20},api.barcodeCanvas);
