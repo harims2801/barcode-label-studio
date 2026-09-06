@@ -10,7 +10,7 @@ GlobalFonts.registerFromPath('/usr/share/fonts/opentype/urw-base35/NimbusSans-Bo
 const root = path.resolve(__dirname,'..');
 const src = fs.existsSync(path.join(root,'dist/app.js')) ? 'dist' : 'src';
 const read = name => fs.readFileSync(path.join(root,src,name),'utf8');
-const defaults = {shopFont:30,designsFont:16,taglineFont:11,logoOffset:0,pricePrefix:'Yes WE Price',brand:'Yeswedesigns',priceColor:'C00000',sizeColor:'008000',startPosition:1,rowsPerPage:3,barcodeWidthCm:3.75,barcodeHeightCm:1.25,nameFont:10.5,lineSpacing:1.15,labelsPerRow:3,labelWidthCm:5,labelHeightCm:7.5,horizontalGapCm:.18,verticalGapCm:.18,codeFont:8.5,sizeFont:7.5,priceFont:9,brandFont:8};
+const defaults = {shopFont:30,designsFont:16,taglineFont:11,logoOffset:0,pricePrefix:'Yes WE Price',brand:'Yeswedesigns',priceColor:'C00000',sizeColor:'008000',startPosition:1,rowsPerPage:3,barcodeWidthCm:3.75,barcodeHeightCm:1.25,nameFont:10.5,lineSpacing:1.15,labelsPerRow:4,labelWidthCm:5,labelHeightCm:7.5,horizontalGapCm:.18,verticalGapCm:.18,codeFont:8.5,sizeFont:7.5,priceFont:9,brandFont:8};
 const p = {code:'005330',name:'FANCY COTTON SAREE',size:'XL',price:'1110'};
 let api, renderer;
 const init = (async () => {
@@ -55,6 +55,8 @@ test('content closes gaps while barcode size and outer label stay fixed',async()
   assert.equal(nameWrap.labelLayout.nameLines,2);
   assert.ok(nameWrap.labelLayout.barcodeY>compact.labelLayout.barcodeY);
   assert.ok(withSize.labelLayout.panelBottom>compact.labelLayout.panelBottom);
+  assert.ok(withSize.labelLayout.outerBottom>compact.labelLayout.outerBottom);
+  assert.equal(compact.labelLayout.outerBottom,compact.labelLayout.panelBottom+1.2);
 });
 test('logo position changes only watermark, barcode pixels unchanged',async()=>{
   await init;
@@ -91,6 +93,7 @@ test('two-page DOCX with start offset, distinct products sharing code',async()=>
   const {xml,images}=api.buildDocumentXml(labels,s);
   assert.equal((xml.match(/<w:tbl>/g)||[]).length,2);assert.equal(images.length,13);
   assert.ok(xml.includes('cx="1800000" cy="2700000"'));
+  assert.ok(xml.includes('w:pgMar w:top="283" w:right="130" w:bottom="283" w:left="130"'));
   // napi canvas supplies toBlob; return its PNG bytes through the browser-shaped API.
   const canvasProto=Object.getPrototypeOf(createCanvas(1,1));
   canvasProto.toBlob=function(callback){callback(new Blob([this.toBuffer('image/png')],{type:'image/png'}));};

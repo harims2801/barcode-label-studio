@@ -11,12 +11,13 @@ Completed 2026-09-06.
 - Product add, edit and delete work; settings and products survive reload.
 - Out-of-range font and million-label quantity show validation instead of creating output.
 - 13 labels with starting position 2 prepare two print sheets with all 13 images decoded.
+- A4 preview, browser print CSS and Word use four 50 mm labels per row with 1.8 mm gaps and reduced page margins.
 - 390px iframe viewport: responsive settings stack correctly; table scrolls horizontally; font control remains usable. This is responsive browser testing, not an iPhone/Safari device test.
 - Word button reaches successful generation state and re-enables itself.
 
 ## Automated and document checks
 
-Eight regression tests pass: default/optional-size rendering; outer and barcode-section borders; dynamic name/Size flow with fixed barcode dimensions; watermark-only pixel differences with identical barcode pixels; independent font/colour changes; overflow rejection; Code128 leading-zero/quiet-zone checks; and two-page DOCX generation with distinct details sharing one barcode code.
+Eight regression tests pass: default/optional-size rendering; content-sized outer and barcode-section borders; dynamic name/Size flow with fixed barcode dimensions; watermark-only pixel differences with identical barcode pixels; independent font/colour changes; overflow rejection; Code128 leading-zero/quiet-zone checks; and four-column two-page DOCX generation with distinct details sharing one barcode code.
 
 The generated two-page DOCX was rendered through LibreOffice and both pages visually inspected. The single outer border and single barcode-section border, branding, full watermark, optional Size and changing prices fit without clipping. JavaScript syntax and whitespace checks pass. Standalone packaging embeds the logo, scripts and Word template.
 

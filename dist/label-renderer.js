@@ -13,10 +13,6 @@ window.LabelRenderer = (() => {
     const ctx = canvas.getContext('2d');
     ctx.scale(scale, scale);
     ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, 50, 75);
-    // Two distinct boxes: the outer label edge and the barcode/details section.
-    // Keep the outer stroke slightly inset so it survives image and printer clipping.
-    ctx.strokeStyle = '#000'; ctx.lineWidth = .2;
-    ctx.strokeRect(.35, .35, 49.3, 74.3);
     const font = (pt, bold) => { ctx.font = `${bold ? 'bold' : 'normal'} ${pt * MM_PER_PT}px Arial`; };
     const text = (value, pt, y, bold = false, color = '000000', width = 44, condensed = 1) => {
       font(pt, bold);
@@ -76,7 +72,11 @@ window.LabelRenderer = (() => {
     if (panelBottom > 73) throw new Error('Label details are too tall. Reduce a font, barcode height or line spacing.');
     ctx.strokeStyle = '#000'; ctx.lineWidth = .2;
     ctx.strokeRect(2, 30, 46, panelBottom - 30);
-    canvas.labelLayout = { barcodeY, barcodeH, barcodeW, nameLines: nameLines.length, panelBottom };
+    // Close the complete-label border around the visible content. The canvas remains
+    // 50 × 75 mm, so any unused row space is outside the border and rows still align.
+    const outerBottom = panelBottom + 1.2;
+    ctx.strokeRect(.35, .35, 49.3, outerBottom - .35);
+    canvas.labelLayout = { barcodeY, barcodeH, barcodeW, nameLines: nameLines.length, panelBottom, outerBottom };
     return canvas;
   }
   return { ready, render };
