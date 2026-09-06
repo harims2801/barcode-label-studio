@@ -112,6 +112,12 @@ td:nth-child(1) { width: 16%; } td:nth-child(2) { width: 32%; } td:nth-child(3) 
 .toast.error { background: #a52525; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 #print-sheets { display: none; }
+.paper { padding: 10.476% 10.952%; grid-template-columns: repeat(3, 30.488%); grid-template-rows: none; grid-auto-rows: max-content; align-content: start; column-gap: 1.098%; row-gap: 0.712%; }
+.label-artwork { width: 100%; aspect-ratio: 2 / 3; height: auto; display: block; min-width: 0; }
+.label-artwork.empty { background: transparent; }
+#validation-message { color: #a52525; font-size: 14px; }
+.preview-error { grid-column: 1 / -1; color: #a52525; font-size: 14px; }
+.settings-grid small { font-weight: normal; }
 
 @media (max-width: 1000px) {
   .workspace { grid-template-columns: 1fr; }
@@ -141,7 +147,8 @@ td:nth-child(1) { width: 16%; } td:nth-child(2) { width: 32%; } td:nth-child(3) 
   #print-sheets { display: block !important; }
   .print-page { width: 210mm; height: 297mm; padding: 22mm 23mm; background: white; page-break-after: always; overflow: hidden; }
   .print-page:last-child { page-break-after: auto; }
-  .print-grid { display: grid; grid-template-columns: repeat(4, 38.6mm); grid-auto-rows: 38mm; gap: 1.8mm; width: 159.8mm; }
+  .print-grid { display: grid; grid-template-columns: repeat(3, 50mm); grid-auto-rows: 75mm; gap: 1.8mm; width: 153.6mm; }
+  .print-grid .label-artwork { width: 50mm; height: 75mm; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   .print-label { width: 38.6mm; height: 38mm; border: .25mm solid #000; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; padding: 0; color: #000; background: #fff; font-family: Arial, sans-serif; line-height: 1.15; }
   .print-label.empty { border-color: #000; }
   .print-label .print-name { max-width: 37.5mm; white-space: nowrap; overflow: hidden; text-overflow: clip; text-align: center; font-weight: 700; }

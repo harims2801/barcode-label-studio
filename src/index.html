@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Create printable Code 128 barcode labels from Excel and download a ready-to-print Word document." />
+  <meta name="description" content="Create branded portrait barcode labels, download Word or print directly." />
   <title>Barcode Label Studio</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -69,6 +69,10 @@
           <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 10 4 4 4-4"/></svg>
         </summary>
         <div class="settings-grid">
+          <label>Yes We font (pt)<input id="shop-font" type="number" min="12" max="40" step="0.5" value="30" /></label>
+          <label>Authentic Designs font (pt)<input id="designs-font" type="number" min="8" max="24" step="0.5" value="16" /></label>
+          <label>Trust. Quality. Style. font (pt)<input id="tagline-font" type="number" min="6" max="18" step="0.5" value="11" /></label>
+          <label>Logo vertical position (mm)<input id="logo-offset" type="number" min="-15" max="30" step="1" value="0" /><small>Negative = up; positive = down. Logo size stays fixed.</small></label>
           <label>Price prefix<input id="price-prefix" value="Yes WE Price" /></label>
           <label>Brand<input id="brand" value="Yeswedesigns" /></label>
           <label>Price colour
@@ -85,15 +89,16 @@
               <option value="7030A0">Purple</option><option value="E36C09">Orange</option>
             </select>
           </label>
-          <label>Starting label position<input id="start-position" type="number" min="1" max="24" value="1" /></label>
+          <label>Starting label position<input id="start-position" type="number" min="1" max="9" value="1" /></label>
           <label>Barcode width (cm)<input id="barcode-width" type="number" min="1.5" max="4.2" step="0.05" value="3.75" /></label>
           <label>Barcode height (cm)<input id="barcode-height" type="number" min="0.4" max="2" step="0.05" value="1.25" /></label>
           <label>Product font (pt)<input id="name-font" type="number" min="6" max="20" step="0.5" value="10.5" /></label>
           <label>Line spacing<input id="line-spacing" type="number" min="0.8" max="1.5" step="0.05" value="1.15" /></label>
-          <label>Rows per page<input id="rows-per-page" type="number" min="1" max="6" value="6" /></label>
+          <label>Rows per page<input id="rows-per-page" type="number" min="1" max="3" step="1" value="3" /></label>
           <label>Output file name<input id="output-prefix" value="Barcode_Labels" /></label>
         </div>
       </details>
+      <p id="validation-message" role="status" aria-live="polite"></p>
 
       <div class="bottom-action">
         <div><strong id="label-count">0 labels</strong><span id="page-count">0 pages</span></div>
@@ -112,7 +117,7 @@
 
     <aside class="preview-panel" aria-labelledby="preview-heading">
       <div class="preview-head">
-        <div><span class="eyebrow">Live preview</span><h2 id="preview-heading">A4 label sheet</h2></div>
+        <div><span class="eyebrow">Live preview · 50 × 75 mm labels</span><h2 id="preview-heading">A4 label sheet</h2></div>
         <span id="preview-page">Page 1 of 1</span>
       </div>
       <div class="paper-stage">
@@ -120,7 +125,7 @@
       </div>
       <p class="print-tip">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z"/><path d="M12 11v6M12 7h.01"/></svg>
-        Print from Word using <strong>Actual Size / 100%</strong>.
+        Print at <strong>Actual Size / 100%</strong>, A4, with browser headers and footers off.
       </p>
     </aside>
   </main>
@@ -128,6 +133,7 @@
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <div id="print-sheets" aria-hidden="true"></div>
   <script src="jszip.min.js"></script>
+  <script src="label-renderer.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

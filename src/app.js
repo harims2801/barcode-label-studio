@@ -29,7 +29,7 @@
   const $ = selector => document.querySelector(selector);
   const rowsElement = $("#product-rows");
   const toast = $("#toast");
-  const settingsIds = ["price-prefix", "brand", "price-color", "size-color", "start-position", "barcode-width", "barcode-height", "name-font", "line-spacing", "rows-per-page", "output-prefix"];
+  const settingsIds = ["shop-font", "designs-font", "tagline-font", "logo-offset", "price-prefix", "brand", "price-color", "size-color", "start-position", "barcode-width", "barcode-height", "name-font", "line-spacing", "rows-per-page", "output-prefix"];
 
   const escapeXml = value => String(value ?? "")
     .replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
@@ -77,9 +77,11 @@
       if (strict) {
         if (!code || !name || !price) throw new Error(`Row ${index + 1}: code, product name and price are required.`);
         if (!Number.isInteger(quantity) || quantity < 1) throw new Error(`Row ${index + 1}: quantity must be a whole number of 1 or more.`);
+        if (!/^\d+(\.\d{1,2})?$/.test(price)) throw new Error(`Row ${index + 1}: price must be a non-negative number with up to two decimals.`);
         if ([...code].some(char => char.charCodeAt(0) < 32 || char.charCodeAt(0) > 126)) throw new Error(`Row ${index + 1}: barcode contains unsupported characters.`);
       }
       const copies = Number.isInteger(quantity) && quantity > 0 ? quantity : 1;
+      if (expanded.length + copies > MAX_LABELS) throw new Error(`Please generate no more than ${MAX_LABELS} labels at a time.`);
       for (let copy = 0; copy < copies; copy += 1) expanded.push({ code, name, size, price });
     });
     if (strict && !expanded.length) throw new Error("Add at least one complete product row.");
@@ -88,13 +90,17 @@
   }
 
   function readSettings() {
-    const rowsPerPage = Math.round(Number($("#rows-per-page").value) || 6);
-    const startPosition = Math.round(Number($("#start-position").value) || 1);
+    const rowsPerPage = Number($("#rows-per-page").value);
+    const startPosition = Number($("#start-position").value);
     const settings = {
       pricePrefix: $("#price-prefix").value.trim() || "Yes WE Price",
       brand: $("#brand").value.trim() || "Yeswedesigns",
       priceColor: $("#price-color").value,
       sizeColor: $("#size-color").value,
+      shopFont: Number($("#shop-font").value),
+      designsFont: Number($("#designs-font").value),
+      taglineFont: Number($("#tagline-font").value),
+      logoOffset: Number($("#logo-offset").value),
       startPosition,
       rowsPerPage,
       barcodeWidthCm: Number($("#barcode-width").value),
@@ -102,9 +108,9 @@
       nameFont: Number($("#name-font").value),
       lineSpacing: Number($("#line-spacing").value),
       outputPrefix: $("#output-prefix").value.trim() || "Barcode_Labels",
-      labelsPerRow: 4,
-      labelWidthCm: 3.86,
-      labelHeightCm: 3.8,
+      labelsPerRow: 3,
+      labelWidthCm: 5,
+      labelHeightCm: 7.5,
       horizontalGapCm: .18,
       verticalGapCm: .18,
       codeFont: 8.5,
@@ -115,8 +121,13 @@
     const within = (value, min, max, label) => {
       if (!Number.isFinite(value) || value < min || value > max) throw new Error(`${label} must be between ${min} and ${max}.`);
     };
-    within(settings.rowsPerPage, 1, 6, "Rows per page");
-    within(settings.startPosition, 1, settings.rowsPerPage * 4, "Starting label position");
+    within(settings.shopFont, 12, 40, "Yes We font");
+    within(settings.designsFont, 8, 24, "Authentic Designs font");
+    within(settings.taglineFont, 6, 18, "Tagline font");
+    within(settings.logoOffset, -15, 30, "Logo vertical position");
+    within(settings.rowsPerPage, 1, 3, "Rows per page");
+    within(settings.startPosition, 1, settings.rowsPerPage * 3, "Starting label position");
+    if (!Number.isInteger(rowsPerPage) || !Number.isInteger(startPosition)) throw new Error("Rows and starting position must be whole numbers.");
     within(settings.barcodeWidthCm, 1.5, 4.2, "Barcode width");
     within(settings.barcodeHeightCm, .4, 2, "Barcode height");
     within(settings.nameFont, 6, 20, "Product font");
@@ -132,6 +143,7 @@
 
   function code128Modules(code) {
     if (!code) throw new Error("A barcode code is empty.");
+    if ([...code].some(char => char.charCodeAt(0) < 32 || char.charCodeAt(0) > 126)) throw new Error("Barcode contains unsupported characters. Use letters, numbers or standard punctuation.");
     let values;
     if (/^\d+$/.test(code) && code.length % 2 === 0) {
       values = [105];
@@ -141,7 +153,7 @@
     }
     const checksum = (values[0] + values.slice(1).reduce((sum, value, index) => sum + value * (index + 1), 0)) % 103;
     values.push(checksum, 106);
-    let modules = "00000";
+    let modules = "0000000000";
     values.forEach(value => {
       let isBar = true;
       for (const width of CODE128_PATTERNS[value]) {
@@ -149,7 +161,7 @@
         isBar = !isBar;
       }
     });
-    return `${modules}00000`;
+    return `${modules}0000000000`;
   }
 
   function barcodeCanvas(code, modulePixels = 4, height = 100) {
@@ -167,41 +179,36 @@
     return canvas;
   }
 
+  function labelArtwork(product, settings) {
+    return LabelRenderer.render(product, settings, barcodeCanvas);
+  }
   function updatePreview() {
-    let settings;
-    try { settings = readSettings(); } catch { settings = { rowsPerPage: 6, startPosition: 1, priceColor: "C00000", sizeColor: "C00000", pricePrefix: "Yes WE Price", brand: "Yeswedesigns" }; }
-    const labels = expandedProducts(false);
-    const labelsPerPage = settings.rowsPerPage * 4;
-    const totalSlots = Math.max(1, settings.startPosition - 1 + labels.length);
-    const pages = Math.max(1, Math.ceil(totalSlots / labelsPerPage));
-    $("#label-count").textContent = `${labels.length} label${labels.length === 1 ? "" : "s"}`;
-    $("#page-count").textContent = `${pages} page${pages === 1 ? "" : "s"}`;
-    $("#preview-page").textContent = `Page 1 of ${pages}`;
-    $("#start-position").max = String(labelsPerPage);
     const paper = $("#preview-paper");
-    paper.style.gridTemplateRows = `repeat(${settings.rowsPerPage}, 1fr)`;
-    const slots = [];
-    for (let slot = 0; slot < labelsPerPage; slot += 1) {
-      const product = labels[slot - (settings.startPosition - 1)];
-      if (!product) {
-        slots.push('<div class="label-preview empty"></div>');
-        continue;
+    const message = $("#validation-message");
+    try {
+      const settings = readSettings();
+      const labels = expandedProducts(false);
+      const perPage = settings.rowsPerPage * settings.labelsPerRow;
+      const pages = Math.max(1, Math.ceil((settings.startPosition - 1 + labels.length) / perPage));
+      $("#label-count").textContent = `${labels.length} labels`;
+      $("#page-count").textContent = `${pages} pages`;
+      $("#preview-page").textContent = `Page 1 of ${pages}`;
+      $("#start-position").max = String(perPage);
+      const slots = [];
+      for (let slot = 0; slot < perPage; slot++) {
+        const p = labels[slot - settings.startPosition + 1];
+        slots.push(p ? `<img class="label-artwork" alt="${escapeXml(p.name)}, code ${escapeXml(p.code)}${p.size ? ', Size: ' + escapeXml(p.size) : ''}, price ${escapeXml(p.price)}" src="${labelArtwork(p, settings).toDataURL('image/png')}">` : '<div class="label-artwork empty"></div>');
       }
-      let barcode = "";
-      try { barcode = barcodeCanvas(product.code, 2, 50).toDataURL("image/png"); } catch { /* incomplete edit */ }
-      const priceColor = `#${settings.priceColor}`;
-      const sizeColor = `#${settings.sizeColor}`;
-      const previewNameSize = (settings.nameFont * 0.168).toFixed(3);
-      slots.push(`<div class="label-preview">
-        <div class="p-name" style="font-size:${previewNameSize}cqw">${escapeXml(product.name)}</div>
-        ${barcode ? `<img class="p-barcode" alt="" src="${barcode}" />` : ""}
-        <div class="p-code">${escapeXml(product.code)}</div>
-        ${product.size ? `<div class="p-size" style="color:${sizeColor}">Size: ${escapeXml(product.size)}</div>` : ""}
-        <div class="p-price" style="color:${priceColor}">${escapeXml(settings.pricePrefix)} ${escapeXml(product.price)}/-</div>
-        <div class="p-brand">${escapeXml(settings.brand)}</div>
-      </div>`);
+      paper.innerHTML = slots.join("");
+      message.textContent = "";
+      $("#generate").disabled = false;
+      $("#print-labels").disabled = false;
+    } catch (error) {
+      message.textContent = error.message;
+      paper.innerHTML = '<p class="preview-error">Preview unavailable. Please check the message below Label settings.</p>';
+      $("#generate").disabled = true;
+      $("#print-labels").disabled = true;
     }
-    paper.innerHTML = slots.join("");
   }
 
   async function parseExcel(file) {
@@ -303,20 +310,9 @@
     return `<w:p><w:pPr><w:jc w:val="center"/><w:spacing w:before="50" w:after="0" w:line="${lineTwips}" w:lineRule="atLeast"/></w:pPr><w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="${widthEmu}" cy="${heightEmu}"/><wp:effectExtent l="0" t="0" r="0" b="0"/><wp:docPr id="${imageId}" name="${name}"/><wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect="0"/></wp:cNvGraphicFramePr><a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic><pic:nvPicPr><pic:cNvPr id="0" name="${name}.png"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="${relationId}"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${widthEmu}" cy="${heightEmu}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>`;
   }
   function labelCell(product, relationId, imageId, layout) {
-    const borders = '<w:tcBorders><w:top w:val="single" w:sz="6" w:space="0" w:color="000000"/><w:left w:val="single" w:sz="6" w:space="0" w:color="000000"/><w:bottom w:val="single" w:sz="6" w:space="0" w:color="000000"/><w:right w:val="single" w:sz="6" w:space="0" w:color="000000"/></w:tcBorders>';
-    const properties = `<w:tcPr><w:tcW w:w="${layout.labelWidthDxa}" w:type="dxa"/>${borders}<w:vAlign w:val="center"/></w:tcPr>`;
+    const properties = `<w:tcPr><w:tcW w:w="${layout.labelWidthDxa}" w:type="dxa"/><w:vAlign w:val="top"/></w:tcPr>`;
     if (!product) return `<w:tc>${properties}<w:p/></w:tc>`;
-    const nameSize = layout.nameFont;
-    const nameLine = Math.max(nameSize + 1, nameSize * 1.08);
-    const content = [
-      textParagraph(product.name, nameSize, nameLine, true),
-      imageParagraph(relationId, imageId, layout.barcodeWidthEmu, layout.barcodeHeightEmu),
-      textParagraph(product.code, layout.codeFont, layout.codeFont * layout.lineSpacing)
-    ];
-    if (product.size) content.push(textParagraph(`Size: ${product.size}`, layout.sizeFont, layout.sizeFont * layout.lineSpacing, false, layout.sizeColor));
-    content.push(textParagraph(`${layout.pricePrefix} ${product.price}/-`, layout.priceFont, layout.priceFont * layout.lineSpacing, false, layout.priceColor));
-    content.push(textParagraph(layout.brand, layout.brandFont, layout.brandFont * layout.lineSpacing));
-    return `<w:tc>${properties}${content.join("")}</w:tc>`;
+    return `<w:tc>${properties}${imageParagraph(relationId, imageId, layout.labelWidthCm * 360000, layout.labelHeightCm * 360000).replace('w:before="50"', 'w:before="0"')}</w:tc>`;
   }
   const spacerCell = width => `<w:tc><w:tcPr><w:tcW w:w="${width}" w:type="dxa"/></w:tcPr><w:p/></w:tc>`;
 
@@ -324,7 +320,7 @@
     const gridWidths = [];
     for (let column = 0; column < layout.labelsPerRow * 2 - 1; column += 1) gridWidths.push(column % 2 === 0 ? layout.labelWidthDxa : layout.horizontalGapDxa);
     const tableWidth = gridWidths.reduce((sum, value) => sum + value, 0);
-    const properties = `<w:tblPr><w:tblW w:w="${tableWidth}" w:type="dxa"/><w:tblInd w:w="120" w:type="dxa"/><w:tblLayout w:type="fixed"/><w:tblCellMar><w:top w:w="0" w:type="dxa"/><w:left w:w="0" w:type="dxa"/><w:bottom w:w="0" w:type="dxa"/><w:right w:w="0" w:type="dxa"/></w:tblCellMar></w:tblPr>`;
+    const properties = `<w:tblPr><w:tblW w:w="${tableWidth}" w:type="dxa"/><w:tblInd w:w="0" w:type="dxa"/><w:tblLayout w:type="fixed"/><w:tblCellMar><w:top w:w="0" w:type="dxa"/><w:left w:w="0" w:type="dxa"/><w:bottom w:w="0" w:type="dxa"/><w:right w:w="0" w:type="dxa"/></w:tblCellMar></w:tblPr>`;
     const grid = `<w:tblGrid>${gridWidths.map(width => `<w:gridCol w:w="${width}"/>`).join("")}</w:tblGrid>`;
     const rows = [];
     let labelIndex = 0;
@@ -365,7 +361,7 @@
           pageProducts[slot] = labels[productIndex];
           relationIds[slot] = `rIdBarcode${imageCounter}`;
           imageIds[slot] = imageCounter;
-          images.push({ imageId: imageCounter, code: labels[productIndex].code });
+          images.push({ imageId: imageCounter, product: labels[productIndex] });
           imageCounter += 1;
         }
       }
@@ -377,9 +373,9 @@
     return { xml, images };
   }
 
-  async function canvasPngBytes(code) {
-    const canvas = barcodeCanvas(code, 5, 100);
-    const blob = await new Promise((resolve, reject) => canvas.toBlob(value => value ? resolve(value) : reject(new Error("Could not create barcode image.")), "image/png"));
+  async function canvasPngBytes(product, settings) {
+    const canvas = labelArtwork(product, settings);
+    const blob = await new Promise((resolve, reject) => canvas.toBlob(value => value ? resolve(value) : reject(new Error("Could not create label image.")), "image/png"));
     return blob.arrayBuffer();
   }
 
@@ -397,53 +393,45 @@
     zip.file("word/_rels/document.xml.rels", relationships);
     const cache = new Map();
     for (const image of images) {
-      if (!cache.has(image.code)) cache.set(image.code, canvasPngBytes(image.code));
-      zip.file(`word/media/barcode${image.imageId}.png`, await cache.get(image.code));
+      const key = JSON.stringify(image.product);
+      if (!cache.has(key)) cache.set(key, canvasPngBytes(image.product, settings));
+      zip.file(`word/media/barcode${image.imageId}.png`, await cache.get(key));
     }
     return zip.generateAsync({ type: "blob", mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", compression: "DEFLATE", compressionOptions: { level: 6 } });
   }
 
   function buildPrintSheets(labels, settings) {
-    const container = $("#print-sheets");
     const perPage = settings.labelsPerRow * settings.rowsPerPage;
     const pageCount = Math.ceil((settings.startPosition - 1 + labels.length) / perPage);
     const pages = [];
-    for (let page = 0; page < pageCount; page += 1) {
+    for (let page = 0; page < pageCount; page++) {
       const slots = [];
-      for (let slot = 0; slot < perPage; slot += 1) {
-        const product = labels[page * perPage + slot - (settings.startPosition - 1)];
-        if (!product) {
-          slots.push('<div class="print-label empty"></div>');
-          continue;
-        }
-        const nameSize = settings.nameFont;
-        const barcode = barcodeCanvas(product.code, 5, 100).toDataURL("image/png");
-        slots.push(`<div class="print-label" style="line-height:${settings.lineSpacing}">
-          <div class="print-name" style="font-size:${nameSize}pt">${escapeXml(product.name)}</div>
-          <img alt="" src="${barcode}" style="width:${settings.barcodeWidthCm}cm;height:${settings.barcodeHeightCm}cm" />
-          <div class="print-line" style="font-size:${settings.codeFont}pt">${escapeXml(product.code)}</div>
-          ${product.size ? `<div class="print-line" style="font-size:${settings.sizeFont}pt;color:#${settings.sizeColor}">Size: ${escapeXml(product.size)}</div>` : ""}
-          <div class="print-line" style="font-size:${settings.priceFont}pt;color:#${settings.priceColor}">${escapeXml(settings.pricePrefix)} ${escapeXml(product.price)}/-</div>
-          <div class="print-line" style="font-size:${settings.brandFont}pt">${escapeXml(settings.brand)}</div>
-        </div>`);
+      for (let slot = 0; slot < perPage; slot++) {
+        const product = labels[page * perPage + slot - settings.startPosition + 1];
+        slots.push(product ? `<img class="label-artwork" alt="${escapeXml(product.name)}" src="${labelArtwork(product, settings).toDataURL('image/png')}">` : '<div class="label-artwork empty"></div>');
       }
-      pages.push(`<section class="print-page"><div class="print-grid" style="grid-template-rows:repeat(${settings.rowsPerPage},38mm)">${slots.join("")}</div></section>`);
+      pages.push(`<section class="print-page"><div class="print-grid">${slots.join("")}</div></section>`);
     }
-    container.innerHTML = pages.join("");
+    $("#print-sheets").innerHTML = pages.join("");
   }
 
   function saveLocalState() {
     try {
       const settings = Object.fromEntries(settingsIds.map(id => [id, $(`#${id}`).value]));
-      localStorage.setItem("barcode-label-studio", JSON.stringify({ products, settings }));
+      localStorage.setItem("barcode-label-studio-new-label", JSON.stringify({ products, settings }));
     } catch { /* Browser storage may be unavailable. */ }
   }
 
   function restoreLocalState() {
     try {
-      const saved = JSON.parse(localStorage.getItem("barcode-label-studio") || "null");
+      const current = localStorage.getItem("barcode-label-studio-new-label");
+      const saved = JSON.parse(current || localStorage.getItem("barcode-label-studio") || "null");
       if (Array.isArray(saved?.products) && saved.products.length) products = saved.products;
       const savedSettings = saved?.settings || {};
+      if (!current) {
+        delete savedSettings["rows-per-page"];
+        delete savedSettings["start-position"];
+      }
       const legacyColor = savedSettings["accent-color"];
       if (legacyColor) {
         if (!savedSettings["price-color"]) savedSettings["price-color"] = legacyColor;
@@ -489,11 +477,12 @@
   });
   settingsIds.forEach(id => $(`#${id}`).addEventListener("input", () => { saveLocalState(); updatePreview(); }));
 
-  $("#print-labels").addEventListener("click", () => {
+  $("#print-labels").addEventListener("click", async () => {
     try {
       const settings = readSettings();
       const labels = expandedProducts(true);
       buildPrintSheets(labels, settings);
+      await Promise.all([...$("#print-sheets").querySelectorAll("img")].map(img => img.decode()));
       requestAnimationFrame(() => requestAnimationFrame(() => window.print()));
     } catch (error) {
       showToast(error.message || "Could not prepare the labels for printing.", true);
@@ -524,5 +513,9 @@
   });
 
   restoreLocalState();
-  renderRows();
+  LabelRenderer.ready.then(renderRows).catch(() => {
+    $("#validation-message").textContent = "Logo could not load. Reload the app before printing.";
+    $("#generate").disabled = true;
+    $("#print-labels").disabled = true;
+  });
 })();

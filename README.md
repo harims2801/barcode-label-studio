@@ -1,26 +1,26 @@
-# Barcode Label Studio
+# Barcode Label Studio — new-label
 
-A browser-based Code 128 barcode label generator designed for quick product-label printing.
+Portrait shop labels with blue/cyan branding and a movable logo watermark.
 
-## Features
+- 50 × 75 mm labels; 3 columns × 3 rows on A4 with 1.8 mm gaps.
+- Enter code, product name, quantity, optional size and price directly.
+- Separate font controls for Yes We, Authentic Designs and Trust. Quality. Style.
+- Logo vertical position is in millimetres: negative moves up, positive moves down. Its 17 × 30 mm size stays fixed. Default position keeps the complete logo above the barcode.
+- Size and Price have separate colour controls. Blank Size is omitted.
+- Product names wrap to at most two lines. Invalid layouts show a message instead of printing clipped text.
+- Preview, browser printing and Word share 600 dpi label artwork. Word contains embedded label images; edit content in the app before downloading.
+- New-label preferences use separate browser storage. Existing product data/settings are imported once without changing the original app's saved data. Old page geometry resets to the new layout.
 
-- Enter product code, name, quantity, optional size, and price directly on the webpage
-- See a live A4 label-sheet preview
-- Adjust brand, price prefix, colour, barcode size, font size, and spacing
-- Print labels directly from the browser
-- Download a print-ready Microsoft Word document
-- Keep entered data on the device using browser storage
+## Run
 
-## Use the app
+Open the self-contained `index.html` in a modern browser. No installation or server is required for daily use. Print at 100%, A4 portrait, with browser headers/footers disabled.
 
-Open `index.html` in a modern browser. It is a single self-contained offline file, so no installation or web server is required.
+Readable source lives in `src/`. To develop: `npm ci`, then `npm run dev`. Rebuild the standalone entrypoint with `node build-standalone.cjs`. Run regression checks with `npm test` (headless raster tests use Nimbus Sans when available).
 
-When printing, choose **Actual Size / 100%** in the browser or Word print dialog.
+## Branch policy
 
-## Source files
+All new label work stays on `new-label`. Merge into `main` only when the owner explicitly requests it.
 
-The readable application source, barcode library, and Word template are available in the `src` folder.
+## Validation
 
-## Live version
-
-https://barcode-label-studio-hariharan.lakshmi-minn-0875.chatgpt.site
+See `QA.md` for completed tests and remaining real-device checks.
