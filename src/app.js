@@ -109,10 +109,10 @@
       lineSpacing: Number($("#line-spacing").value),
       outputPrefix: $("#output-prefix").value.trim() || "Barcode_Labels",
       labelsPerRow: 4,
-      labelWidthCm: 5,
-      labelHeightCm: 7.5,
+      labelWidthCm: 4.8,
+      labelHeightCm: 6.9,
       horizontalGapCm: .18,
-      verticalGapCm: .18,
+      verticalGapCm: .08,
       codeFont: 8.5,
       sizeFont: 7.5,
       priceFont: 9,
@@ -125,7 +125,7 @@
     within(settings.designsFont, 8, 24, "Authentic Designs font");
     within(settings.taglineFont, 6, 18, "Tagline font");
     within(settings.logoOffset, -15, 30, "Logo vertical position");
-    within(settings.rowsPerPage, 1, 3, "Rows per page");
+    within(settings.rowsPerPage, 1, 4, "Rows per page");
     within(settings.startPosition, 1, settings.rowsPerPage * settings.labelsPerRow, "Starting label position");
     if (!Number.isInteger(rowsPerPage) || !Number.isInteger(startPosition)) throw new Error("Rows and starting position must be whole numbers.");
     within(settings.barcodeWidthCm, 1.5, 4.2, "Barcode width");
@@ -133,7 +133,7 @@
     within(settings.nameFont, 6, 20, "Product font");
     within(settings.lineSpacing, .8, 1.5, "Line spacing");
     if (settings.barcodeWidthCm > settings.labelWidthCm - .04) throw new Error("Barcode width is too large for the label width.");
-    if (settings.rowsPerPage * settings.labelHeightCm + (settings.rowsPerPage - 1) * settings.verticalGapCm > 28.7) throw new Error("The selected rows are too tall for an A4 page.");
+    if (settings.rowsPerPage * settings.labelHeightCm + (settings.rowsPerPage - 1) * settings.verticalGapCm > 27.9) throw new Error("The selected rows are too tall for an A4 page.");
     const availablePoints = settings.labelHeightCm * 1440 / 2.54 / 20;
     const requiredPoints = Math.max(settings.nameFont + 1, settings.nameFont * 1.08) + 2.5 + settings.barcodeHeightCm * 28.3465 +
       (settings.codeFont + settings.sizeFont + settings.priceFont + settings.brandFont) * settings.lineSpacing;
@@ -368,7 +368,7 @@
       if (page) body.push('<w:p><w:pPr><w:pageBreakBefore/><w:spacing w:before="0" w:after="0" w:line="20" w:lineRule="exact"/></w:pPr></w:p>');
       body.push(tableXml(pageProducts, relationIds, imageIds, layout));
     }
-    const section = '<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="283" w:right="130" w:bottom="283" w:left="130" w:header="0" w:footer="0" w:gutter="0"/><w:cols w:space="708"/><w:docGrid w:linePitch="360"/></w:sectPr>';
+    const section = '<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="510" w:right="357" w:bottom="510" w:left="357" w:header="0" w:footer="0" w:gutter="0"/><w:cols w:space="708"/><w:docGrid w:linePitch="360"/></w:sectPr>';
     const xml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><w:body>${body.join("")}${section}</w:body></w:document>`;
     return { xml, images };
   }
@@ -418,7 +418,7 @@
   function saveLocalState() {
     try {
       const settings = Object.fromEntries(settingsIds.map(id => [id, $(`#${id}`).value]));
-      localStorage.setItem("barcode-label-studio-new-label", JSON.stringify({ products, settings }));
+      localStorage.setItem("barcode-label-studio-new-label", JSON.stringify({ layoutVersion: 2, products, settings }));
     } catch { /* Browser storage may be unavailable. */ }
   }
 
@@ -428,7 +428,7 @@
       const saved = JSON.parse(current || localStorage.getItem("barcode-label-studio") || "null");
       if (Array.isArray(saved?.products) && saved.products.length) products = saved.products;
       const savedSettings = saved?.settings || {};
-      if (!current) {
+      if (!current || saved?.layoutVersion !== 2) {
         delete savedSettings["rows-per-page"];
         delete savedSettings["start-position"];
       }

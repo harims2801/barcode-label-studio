@@ -2,14 +2,14 @@
 
 Portrait shop labels with blue/cyan branding and a movable logo watermark.
 
-- 50 × 75 mm label slots; 4 columns × 3 rows on A4 with 1.8 mm gaps, 2.3 mm side margins and a 5 mm top margin.
+- 48 × 69 mm label slots; 4 columns × 4 rows on A4. Side margins are 6.3 mm, top/bottom margins are 9 mm, horizontal gaps are 1.8 mm and row gaps are 0.8 mm.
 - One border surrounds the complete label and one border surrounds the barcode section.
 - Enter code, product name, quantity, optional size and price directly.
 - Separate font controls for Yes We, Authentic Designs and Trust. Quality. Style.
 - Logo vertical position is in millimetres: negative moves up, positive moves down. Its 17 × 30 mm size stays fixed. Default position keeps the complete logo above the barcode.
 - Size and Price have separate colour controls. Blank Size is omitted.
 - Product names wrap to at most two lines. Invalid layouts show a message instead of printing clipped text.
-- The barcode follows the actual product-name lines. Both visible borders end after the last detail, leaving unused row space outside the outer border. Barcode width and height remain identical across labels.
+- The barcode follows the actual product-name lines. Both visible borders end after the last detail, leaving unused row space outside the outer border. Size moves into the available space below the code while retaining clear separation from Price. Barcode width and height remain identical across labels.
 - Preview, browser printing and Word share 600 dpi label artwork. Word contains embedded label images; edit content in the app before downloading.
 - New-label preferences use separate browser storage. Existing product data/settings are imported once without changing the original app's saved data. Old page geometry resets to the new layout.
 

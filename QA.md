@@ -10,14 +10,14 @@ Completed 2026-09-06.
 - Leading-zero barcode input is preserved; names wrap; quantity and starting-position changes update page counts.
 - Product add, edit and delete work; settings and products survive reload.
 - Out-of-range font and million-label quantity show validation instead of creating output.
-- 13 labels with starting position 2 prepare two print sheets with all 13 images decoded.
-- A4 preview, browser print CSS and Word use four 50 mm labels per row with 1.8 mm gaps and reduced page margins.
+- 20 labels with starting position 2 prepare two print sheets with all 20 images decoded.
+- A4 preview, browser print CSS and Word use a 4 × 4 grid of 48 × 69 mm slots, safe 6.3 mm side margins and 0.8 mm row gaps.
 - 390px iframe viewport: responsive settings stack correctly; table scrolls horizontally; font control remains usable. This is responsive browser testing, not an iPhone/Safari device test.
 - Word button reaches successful generation state and re-enables itself.
 
 ## Automated and document checks
 
-Eight regression tests pass: default/optional-size rendering; content-sized outer and barcode-section borders; dynamic name/Size flow with fixed barcode dimensions; watermark-only pixel differences with identical barcode pixels; independent font/colour changes; overflow rejection; Code128 leading-zero/quiet-zone checks; and four-column two-page DOCX generation with distinct details sharing one barcode code.
+Eight regression tests pass: default/optional-size rendering; content-sized outer and barcode-section borders; dynamic name/Size flow with fixed barcode dimensions and Size/Price clearance; watermark-only pixel differences with identical barcode pixels; independent font/colour changes; overflow rejection; Code128 leading-zero/quiet-zone checks; and 4 × 4 two-page DOCX generation with distinct details sharing one barcode code.
 
 The generated two-page DOCX was rendered through LibreOffice and both pages visually inspected. The single outer border and single barcode-section border, branding, full watermark, optional Size and changing prices fit without clipping. JavaScript syntax and whitespace checks pass. Standalone packaging embeds the logo, scripts and Word template.
 
